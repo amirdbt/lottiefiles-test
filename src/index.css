@@ -22,11 +22,12 @@
   body {
     font-family: "DM Sans", serif;
     font-optical-sizing: auto;
-    background: #030014;
+    /* background: #; */
+    /* background: #030014; */
   }
 
   h1 {
-    @apply mx-auto max-w-4xl text-center text-5xl font-bold leading-tight tracking-[-1%] text-white sm:text-[64px] sm:leading-[76px];
+    @apply mx-auto max-w-4xl text-center text-5xl leading-tight font-bold tracking-[-1%] text-white sm:text-[64px] sm:leading-[76px];
   }
 
   h2 {
@@ -34,18 +35,56 @@
   }
 
   main {
-    @apply min-h-screen relative bg-primary;
+    @apply bg-primary relative min-h-screen;
   }
 
   header {
-    @apply sm:mt-10 mt-5;
+    @apply mt-5 sm:mt-10;
   }
 
   header img {
-    @apply w-full max-w-lg h-auto object-contain mx-auto drop-shadow-md;
+    @apply mx-auto h-auto w-full max-w-lg object-contain drop-shadow-md;
   }
 }
+@layer utilities {
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 
+  @keyframes bounceOut {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.9);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+  }
+  /* Custom animation utilities */
+  .animate-bounceIn {
+    animation: bounceIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .animate-bounceOut {
+    animation: bounceOut 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+}
 @layer components {
 }
 
@@ -66,4 +105,14 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+.customProgressBar {
+  background: rgba(196, 196, 196, 0.3);
+  backdrop-filter: blur(4.5px);
+  width: 50%;
+  box-sizing: border-box;
+  height: 12px;
+  border-radius: 5px;
+  cursor: pointer;
 }
