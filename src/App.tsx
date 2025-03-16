@@ -1,7 +1,7 @@
 import ControlPanel from "./components/ControlPanel";
 // import GlobalControls from "./components/GlobalControls";
 import DotLottiePlayer from "./components/players/DotLottiePlayer";
-import LottieWebPlayer from "./components/players/LottieWebPlayer";
+// import LottieWebPlayer from "./components/players/LottieWebPlayer";
 import MachineProvider from "./context/MachineProvider";
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
       {/* <GlobalControls /> */}
       <div className="mt-4">
         <DotLottiePlayer />
-        <LottieWebPlayer />
+        {/* <LottieWebPlayer /> */}
         {/* Add other players when ready */}
       </div>
     </MachineProvider>

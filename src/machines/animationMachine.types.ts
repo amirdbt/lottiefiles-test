@@ -1,5 +1,5 @@
 export interface AnimationContext {
-  players: object | null;
+  // players: object | null;
   isPlaying: boolean;
   currentTime: Record<string, number>;
   isLooping: boolean;
@@ -8,6 +8,16 @@ export interface AnimationContext {
   playbackSpeed: number;
   globalSpeed: number;
   isSeeking?: boolean;
+  players: {
+    [playerId: string]: {
+      ref: object; // The player instance
+      isPlaying: boolean; // Tracks play/pause state
+      isLooping: boolean;
+      playbackSpeed: number;
+      // isSeeking?: boolean;
+      currentTime: number;
+    };
+  };
 }
 
 export type AnimationEvent =
@@ -18,7 +28,8 @@ export type AnimationEvent =
   | { type: "SEEK"; id: string; currentTime: Record<string, number> }
   | { type: "TOGGLE_LOOP"; id: string; currentTime: Record<string, number> }
   | { type: "UPDATE_PROGRESS"; id: string; currentTime: Record<string, number> }
-  | { type: "SET_SPEED"; value: number }
+  | { type: "ANIMATION_ENDED"; id: string; currentTime: Record<string, number> }
+  | { type: "SET_SPEED"; value: number; id: string }
   | { type: "LOAD_FILE"; file: File | null }
   | { type: "LOAD_FILE_SUCCESS"; file: File | null }
   | { type: "LOAD_FILE_ERROR"; error: string }

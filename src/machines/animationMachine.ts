@@ -7,36 +7,41 @@ import {
 } from "xstate";
 import { AnimationContext, AnimationEvent } from "./animationMachine.types";
 import { MAX_FILE_SIZE } from "../constants";
+import { AnimationItem } from "lottie-web";
 
-const trackProgress = fromCallback<EventObject, { players: object }>(
-  ({ sendBack, input }) => {
-    const { players } = input;
+const trackProgress = fromCallback<
+  EventObject,
+  { players: Record<string, { ref: AnimationItem | null }> }
+>(({ sendBack, input }) => {
+  const { players } = input;
 
-    const intervals = Object.entries(players).map(([id, ref]) => {
-      console.log({ ref });
-      const interval = setInterval(() => {
-        const currentTime = ref?.currentFrame;
-        const totalFrames = ref?.totalFrames;
-        console.log({ currentTime, totalFrames });
-        if (currentTime !== undefined && !ref.isSeeking) {
-          sendBack({
-            type: "UPDATE_PROGRESS",
-            id,
-            currentTime: { [id]: Math.round(currentTime) },
-          });
-        }
-        if (currentTime >= totalFrames) {
-          clearInterval(interval);
-          sendBack({ type: "ANIMATION_ENDED", id }); // Optional, if you want to handle this in the machine
-        }
-      }, 100);
+  const intervals = Object.entries(players).map(([id, player]) => {
+    const ref = player?.ref;
+    if (!ref) return () => {}; // Early return if no valid ref
 
-      return () => clearInterval(interval);
-    });
+    const interval = setInterval(() => {
+      const currentTime = ref.currentFrame;
+      const totalFrames = ref.totalFrames;
+      if (currentTime !== undefined) {
+        sendBack({
+          type: "UPDATE_PROGRESS",
+          id,
+          currentTime: { [id]: Math.round(currentTime) },
+        });
+      }
 
-    return () => intervals.forEach((cleanup) => cleanup());
-  },
-);
+      if (currentTime >= totalFrames - 1) {
+        clearInterval(interval);
+
+        sendBack({ type: "ANIMATION_ENDED", id });
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  });
+
+  return () => intervals.forEach((cleanup) => cleanup());
+});
 
 const animationMachine = createMachine(
   {
@@ -65,6 +70,7 @@ const animationMachine = createMachine(
             guard: "hasValidFile",
           },
         ],
+
         on: {
           LOAD_FILE: [
             {
@@ -91,6 +97,24 @@ const animationMachine = createMachine(
               actions: assign({ file: ({ event }) => event.file }),
             },
           ],
+          REGISTER_PLAYER: {
+            actions: assign({
+              players: ({ context, event }) => {
+                console.log({ context, event });
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ref: event.ref,
+                    currentTime: 0,
+                    isLooping: false,
+                    isPlaying: false,
+                    playbackSpeed: 1,
+                    isSeeking: false,
+                  },
+                };
+              },
+            }),
+          },
         },
       },
       loading: {
@@ -128,61 +152,95 @@ const animationMachine = createMachine(
         },
       },
       ready: {
-        entry: [
-          assign({ currentTime: {} }), // Reset progress
-        ],
-
         on: {
           REGISTER_PLAYER: {
             actions: assign({
-              players: ({ context, event }) => ({
-                ...context.players,
-                [event.id]: event.ref,
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    ref: event.ref,
+                  },
+                };
+              },
             }),
           },
           PLAY: {
             target: "playing",
-            actions: assign({ isPlaying: true }),
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: true,
+                  },
+                };
+              },
+            }),
           },
           PAUSE: {
             target: "paused",
-            actions: assign({ isPlaying: false }),
-          },
-          STOP: {
-            target: "idle",
             actions: assign({
-              isPlaying: false,
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                [event.id]: 0,
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                  },
+                };
+              },
             }),
           },
+
           SEEK: {
-            actions: [
-              assign({
-                currentTime: ({ context, event }) => ({
-                  ...context.currentTime,
-                  ...(event.currentTime && {
-                    [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                  }),
-                }),
-                isSeeking: true,
-              }),
-            ],
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    currentTime: event?.currentTime[event.id] ?? 0,
+                  },
+                };
+              },
+            }),
           },
           SET_SPEED: {
-            actions: assign({ playbackSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) => {
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...context.players[event.id],
+                    playbackSpeed: event.value,
+                  },
+                };
+              },
+            }),
           },
           UPDATE_PROGRESS: {
             actions: assign({
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                ...(event.currentTime && {
-                  [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                }),
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                if (!player) return context.players;
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    currentTime: event?.currentTime[event.id] ?? 0,
+                  },
+                };
+              },
             }),
           },
           //Global Controls
@@ -216,56 +274,115 @@ const animationMachine = createMachine(
         on: {
           UPDATE_PROGRESS: {
             actions: assign({
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                ...(event.currentTime && {
-                  [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                }),
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                if (!player) return context.players;
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    currentTime: event?.currentTime[event.id] ?? 0,
+                  },
+                };
+              },
+            }),
+          },
+          ANIMATION_ENDED: {
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                    // currentTime: 0,
+                  },
+                };
+              },
             }),
           },
           PAUSE: {
             target: "paused",
-            actions: assign({ isPlaying: false }),
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                  },
+                };
+              },
+            }),
           },
           STOP: {
-            target: "idle",
+            target: "ready",
             actions: assign({
-              isPlaying: false,
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                [event.id]: 0,
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                // @ts-expect-error :fix this later
+                player?.ref?.stop();
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                    currentTime: 0,
+                  },
+                };
+              },
             }),
           },
           SEEK: {
-            actions: [
-              assign({
-                currentTime: ({ context, event }) => ({
-                  ...context.currentTime,
-                  ...(event.currentTime && {
-                    [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                  }),
-                }),
-                isSeeking: true,
-              }),
-            ],
+            target: "playing",
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    currentTime: event?.currentTime[event.id] ?? 0,
+                  },
+                };
+              },
+            }),
           },
           TOGGLE_LOOP: {
             actions: assign({
-              isLooping: ({ context }) => !context.isLooping,
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                ...(event.currentTime && {
-                  [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                }),
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                if (!player) return context.players;
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isLooping: !player.isLooping,
+                    currentTime: player.currentTime ?? 0,
+                  },
+                };
+              },
             }),
           },
           SET_SPEED: {
-            actions: assign({ playbackSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) => {
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...context.players[event.id],
+                    playbackSpeed: event.value,
+                  },
+                };
+              },
+            }),
           },
-
           //Global Controls
           PAUSE_ALL: {
             target: "paused",
@@ -287,44 +404,81 @@ const animationMachine = createMachine(
         on: {
           PLAY: {
             target: "playing",
-            actions: assign({ isPlaying: true }),
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: true,
+                  },
+                };
+              },
+            }),
           },
           STOP: {
-            target: "idle",
+            target: "ready",
             actions: assign({
-              isPlaying: false,
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                [event.id]: 0,
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                // @ts-expect-error :fix this later
+                player?.ref?.stop();
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                    currentTime: 0,
+                  },
+                };
+              },
             }),
           },
           TOGGLE_LOOP: {
             actions: assign({
-              isLooping: ({ context }) => !context.isLooping,
-              currentTime: ({ context, event }) => ({
-                ...context.currentTime,
-                ...(event.currentTime && {
-                  [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                }),
-              }),
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                if (!player) return context.players;
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isLooping: !player.isLooping,
+                    currentTime: player.currentTime ?? 0,
+                  },
+                };
+              },
             }),
           },
           SEEK: {
-            actions: [
-              assign({
-                currentTime: ({ context, event }) => ({
-                  ...context.currentTime,
-                  ...(event.currentTime && {
-                    [event.id]: event.currentTime[event.id] ?? 0, // Ensure fallback if undefined
-                  }),
-                }),
-                isSeeking: true,
-              }),
-            ],
+            target: "playing",
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    currentTime: event?.currentTime[event.id] ?? 0,
+                  },
+                };
+              },
+            }),
           },
           SET_SPEED: {
-            actions: assign({ playbackSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) => {
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...context.players[event.id],
+                    playbackSpeed: event.value,
+                  },
+                };
+              },
+            }),
           },
 
           //Global Controls
