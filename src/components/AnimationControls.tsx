@@ -1,11 +1,21 @@
+import { playerStatus } from "../constants";
 import { MachineContext } from "../context/MachineContext";
+import { PlayCircle, PauseCircle, StopCircle, Repeat } from "lucide-react";
+import Tooltip from "./Tooltip";
+import ProgressIndicator from "./ProgressIndicator";
 
-const AnimationControls = ({ id }: { id: string }) => {
+const AnimationControls = ({ id, type }: { id: string; type: string }) => {
   const currentTime = MachineContext.useSelector(
     (state) => state.context.players[id]?.currentTime,
   );
   const playbackSpeed = MachineContext.useSelector(
     (state) => state.context.players[id]?.playbackSpeed,
+  );
+  const status = MachineContext.useSelector(
+    (state) => state.context.players[id]?.status,
+  );
+  const isLooping = MachineContext.useSelector(
+    (state) => state.context.players[id]?.isLooping,
   );
   const { send } = MachineContext.useActorRef();
 
@@ -15,32 +25,30 @@ const AnimationControls = ({ id }: { id: string }) => {
     const speed = parseFloat(e.target.value);
     send({ type: "SET_SPEED", id, value: speed });
   };
+  const Icon = status === playerStatus.playing ? PauseCircle : PlayCircle;
+  const actionType = status === playerStatus.playing ? "PAUSE" : "PLAY";
+  const tootlTipText = status === playerStatus.playing ? "Pause" : "Play";
+
   return (
-    <div>
-      <div className=" ">
-        <div className="flex gap-2">
-          <button
-            className="cursor-pointer rounded-md bg-green-500 px-4 py-2 text-white"
-            onClick={() => send({ type: "PLAY", id })}
-          >
-            Play
-          </button>
+    <div className="mt-2">
+      <div className="flex flex-row items-center justify-center gap-2">
+        <Tooltip text={tootlTipText}>
+          <Icon
+            onClick={() => send({ type: actionType, id })}
+            className="bg-primary cursor-pointer text-white"
+          />
+        </Tooltip>
 
-          <button
-            className="cursor-pointer rounded-md bg-yellow-500 px-4 py-2 text-white"
-            onClick={() => send({ type: "PAUSE", id })}
-          >
-            Pause
-          </button>
-
-          <button
-            className="cursor-pointer rounded-md bg-red-500 px-4 py-2 text-white"
+        <Tooltip text="Stop">
+          <StopCircle
+            className="bg-primary cursor-pointer text-white"
             onClick={() => send({ type: "STOP", id, currentTime: { [id]: 0 } })}
-          >
-            Stop
-          </button>
-          <button
-            className="cursor-pointer rounded-md bg-blue-500 px-4 py-2 text-white"
+          />
+        </Tooltip>
+        <ProgressIndicator id={id} type={type} />
+        <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
+          <Repeat
+            className={`bg-primary cursor-pointer ${isLooping ? "text-gray-600" : "text-white"} `}
             onClick={() =>
               send({
                 type: "TOGGLE_LOOP",
@@ -48,21 +56,21 @@ const AnimationControls = ({ id }: { id: string }) => {
                 currentTime: { [id]: Math.round(currentTime) },
               })
             }
-          >
-            Loop
-          </button>
+          />
+        </Tooltip>
 
+        <Tooltip text="Playback Speed">
           <select
-            className="cursor-pointer rounded-md border px-4 py-2"
+            className="bg-primary cursor-pointer rounded-md border border-white p-1 text-sm text-white shadow-md transition-all duration-200 outline-none focus:ring-2 focus:ring-white"
             value={playbackSpeed}
             onChange={handlePlaybackSpeedChange}
           >
             <option value="0.5">0.5x</option>
-            <option value="1">1x (Normal)</option>
+            <option value="1">1x</option>
             <option value="1.5">1.5x</option>
             <option value="2">2x</option>
           </select>
-        </div>
+        </Tooltip>
       </div>
     </div>
   );

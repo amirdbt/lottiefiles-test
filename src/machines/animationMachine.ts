@@ -6,7 +6,7 @@ import {
   type EventObject,
 } from "xstate";
 import { AnimationContext, AnimationEvent } from "./animationMachine.types";
-import { MAX_FILE_SIZE } from "../constants";
+import { MAX_FILE_SIZE, playerStatus } from "../constants";
 import { AnimationItem } from "lottie-web";
 
 const trackProgress = fromCallback<
@@ -100,7 +100,6 @@ const animationMachine = createMachine(
           REGISTER_PLAYER: {
             actions: assign({
               players: ({ context, event }) => {
-                console.log({ context, event });
                 return {
                   ...context.players,
                   [event.id]: {
@@ -110,6 +109,7 @@ const animationMachine = createMachine(
                     isPlaying: false,
                     playbackSpeed: 1,
                     isSeeking: false,
+                    status: playerStatus.idle,
                   },
                 };
               },
@@ -162,6 +162,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     ref: event.ref,
+                    status: playerStatus.ready,
                   },
                 };
               },
@@ -177,6 +178,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isPlaying: true,
+                    status: playerStatus.playing,
                   },
                 };
               },
@@ -193,6 +195,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isPlaying: false,
+                    status: playerStatus.paused,
                   },
                 };
               },
@@ -315,6 +318,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isPlaying: false,
+                    status: playerStatus.paused,
                   },
                 };
               },
@@ -333,6 +337,7 @@ const animationMachine = createMachine(
                     ...player,
                     isPlaying: false,
                     currentTime: 0,
+                    status: playerStatus.ready,
                   },
                 };
               },
@@ -349,6 +354,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     currentTime: event?.currentTime[event.id] ?? 0,
+                    status: playerStatus.playing,
                   },
                 };
               },
@@ -364,7 +370,6 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isLooping: !player.isLooping,
-                    currentTime: player.currentTime ?? 0,
                   },
                 };
               },
@@ -412,6 +417,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isPlaying: true,
+                    status: playerStatus.playing,
                   },
                 };
               },
@@ -430,6 +436,7 @@ const animationMachine = createMachine(
                     ...player,
                     isPlaying: false,
                     currentTime: 0,
+                    status: playerStatus.ready,
                   },
                 };
               },
@@ -445,7 +452,6 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isLooping: !player.isLooping,
-                    currentTime: player.currentTime ?? 0,
                   },
                 };
               },
@@ -462,6 +468,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     currentTime: event?.currentTime[event.id] ?? 0,
+                    status: playerStatus.playing,
                   },
                 };
               },

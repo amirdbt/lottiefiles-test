@@ -4,3 +4,10 @@ export const playerTypes = {
   lottieWeb: "lottie-web",
   dotLottie: "dotLottie",
 };
+
+export const playerStatus = {
+  idle: "idle",
+  ready: "ready",
+  playing: "playing",
+  paused: "paused",
+};

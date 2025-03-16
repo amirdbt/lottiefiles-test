@@ -22,8 +22,7 @@
   body {
     font-family: "DM Sans", serif;
     font-optical-sizing: auto;
-    /* background: #; */
-    /* background: #030014; */
+    background: #030014;
   }
 
   h1 {
@@ -36,14 +35,6 @@
 
   main {
     @apply bg-primary relative min-h-screen;
-  }
-
-  header {
-    @apply mt-5 sm:mt-10;
-  }
-
-  header img {
-    @apply mx-auto h-auto w-full max-w-lg object-contain drop-shadow-md;
   }
 }
 @layer utilities {
@@ -110,7 +101,7 @@
 .customProgressBar {
   background: rgba(196, 196, 196, 0.3);
   backdrop-filter: blur(4.5px);
-  width: 50%;
+  width: 200px;
   box-sizing: border-box;
   height: 12px;
   border-radius: 5px;

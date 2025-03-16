@@ -2,23 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import lottie, { AnimationItem } from "lottie-web";
 import { MachineContext } from "../../context/MachineContext";
 import AnimationControls from "../AnimationControls";
-import ProgressIndicator from "../ProgressIndicator";
 import { playerTypes } from "../../constants";
 
-const LottieWebPlayer = () => {
+const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { send } = MachineContext.useActorRef();
   const file = MachineContext.useSelector((state) => state.context.file);
   const isLooping = MachineContext.useSelector(
-    (state) => state.context.isLooping,
+    (state) => state.context.players[playerId]?.isLooping,
   );
   const [lottiePlayer, setLottiePlayer] = useState<AnimationItem | null>(null);
 
   const playbackSpeed = MachineContext.useSelector(
-    (state) => state.context.players["player2"]?.playbackSpeed,
+    (state) => state.context.players[playerId]?.playbackSpeed,
+  );
+  const playerStatus = MachineContext.useSelector(
+    (state) => state.context.players[playerId]?.status,
   );
 
-  const status = MachineContext.useSelector((state) => state.value);
   useEffect(() => {
     if (!containerRef.current) return;
     const instance = lottie.loadAnimation({
@@ -35,24 +36,28 @@ const LottieWebPlayer = () => {
   }, [file, isLooping]);
   useEffect(() => {
     if (lottiePlayer) {
-      send({ type: "REGISTER_PLAYER", id: "player2", ref: lottiePlayer });
-      if (status === "playing") {
+      send({ type: "REGISTER_PLAYER", id: playerId, ref: lottiePlayer });
+      if (playerStatus === "playing") {
         lottiePlayer?.play();
-      } else if (status === "paused") {
+      } else if (playerStatus === "paused") {
         lottiePlayer?.pause();
-      } else if (status === "ready") {
+      } else if (playerStatus === "ready") {
         lottiePlayer?.stop();
       }
+      lottiePlayer?.setLoop(isLooping);
       lottiePlayer?.setSpeed(playbackSpeed);
     }
-  }, [lottiePlayer, send, status, playbackSpeed]);
+  }, [lottiePlayer, send, playerStatus, playbackSpeed, playerId, isLooping]);
   return (
-    <>
-      <div ref={containerRef} className="h-48 w-96 border" />
+    <section className="flex flex-col items-center justify-center">
+      <h2 className="mb-1">LottieWeb Player</h2>
+      <div
+        ref={containerRef}
+        className="h-[220px] w-[440px] rounded-2xl border bg-white"
+      />
 
-      <ProgressIndicator id="player2" type={playerTypes.lottieWeb} />
-      <AnimationControls id="player2" />
-    </>
+      <AnimationControls id={playerId} type={playerTypes.lottieWeb} />
+    </section>
   );
 };
 

@@ -1,33 +1,34 @@
 import { useEffect, useState } from "react";
 import { DotLottieReact, DotLottie } from "@lottiefiles/dotlottie-react";
 import { MachineContext } from "../../context/MachineContext";
-import ProgressIndicator from "../ProgressIndicator";
 import AnimationControls from "../AnimationControls";
 import { playerTypes } from "../../constants";
 
-const DotLottiePlayer = () => {
+const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
   const file = MachineContext.useSelector((state) => state.context.file);
 
   const isLooping = MachineContext.useSelector(
-    (state) => state.context.players["player1"]?.isLooping,
+    (state) => state.context.players[playerId]?.isLooping,
   );
   const playbackSpeed = MachineContext.useSelector(
-    (state) => state.context.players["player1"]?.playbackSpeed,
+    (state) => state.context.players[playerId]?.playbackSpeed,
   );
-  const status = MachineContext.useSelector((state) => state.value);
+  const playerStatus = MachineContext.useSelector(
+    (state) => state.context.players[playerId]?.status,
+  );
   const { send } = MachineContext.useActorRef();
   const [dottie, setDottie] = useState<DotLottie | null>(null);
 
   useEffect(() => {
     if (dottie) {
-      send({ type: "REGISTER_PLAYER", id: "player1", ref: dottie });
+      send({ type: "REGISTER_PLAYER", id: playerId, ref: dottie });
     }
     const handleLoad = () => {
-      if (status === "playing") {
+      if (playerStatus === "playing") {
         dottie?.play();
-      } else if (status === "paused") {
+      } else if (playerStatus === "paused") {
         dottie?.pause();
-      } else if (status === "ready") {
+      } else if (playerStatus === "ready") {
         dottie?.setFrame(0);
         dottie?.stop();
       }
@@ -35,10 +36,10 @@ const DotLottiePlayer = () => {
     if (dottie) {
       dottie?.addEventListener("load", handleLoad);
     }
-  }, [send, dottie, status, playbackSpeed]);
+  }, [send, dottie, playerStatus, playbackSpeed, playerId]);
   return (
-    <>
-      <h2>DotLottie Player</h2>
+    <section className="flex flex-col items-center justify-center">
+      <h2 className="mb-1">DotLottie Player</h2>
       <DotLottieReact
         dotLottieRefCallback={(dotLottie) => {
           setDottie(dotLottie);
@@ -47,12 +48,11 @@ const DotLottiePlayer = () => {
         autoplay={false}
         loop={isLooping}
         speed={playbackSpeed}
-        className="w-96 border"
+        className="h-[220px] w-[440px] rounded-2xl border bg-white"
       />
 
-      <ProgressIndicator id="player1" type={playerTypes.dotLottie} />
-      <AnimationControls id="player1" />
-    </>
+      <AnimationControls id={playerId} type={playerTypes.dotLottie} />
+    </section>
   );
 };
 

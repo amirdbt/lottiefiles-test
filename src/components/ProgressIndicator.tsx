@@ -63,7 +63,9 @@ const ProgressIndicator = ({ id, type }: { id: string; type: string }) => {
           }}
         ></div>
       </div>
-      <p>{formatFrame(currentTime, totalFrames)}</p>
+      <div className="w-11">
+        <p className="text-white">{formatFrame(currentTime, totalFrames)}</p>
+      </div>
     </>
   );
 };

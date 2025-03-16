@@ -14,8 +14,8 @@ export interface AnimationContext {
       isPlaying: boolean; // Tracks play/pause state
       isLooping: boolean;
       playbackSpeed: number;
-      // isSeeking?: boolean;
       currentTime: number;
+      status: string;
     };
   };
 }
@@ -40,3 +40,12 @@ export type AnimationEvent =
   | { type: "RESUME_TRACKING" }
   | { type: "SEEK_ALL"; time: number }
   | { type: "SET_GLOBAL_SPEED"; value: number };
+
+export interface Player {
+  ref: object | null;
+  currentTime: number;
+  isLooping: boolean;
+  isPlaying: boolean;
+  playbackSpeed: number;
+  status: string; // Or an enum if you prefer
+}
