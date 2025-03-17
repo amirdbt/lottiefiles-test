@@ -37,8 +37,9 @@ export type AnimationEvent =
   | { type: "PLAY_ALL" }
   | { type: "PAUSE_ALL" }
   | { type: "STOP_ALL" }
+  | { type: "LOOP_ALL" }
   | { type: "RESUME_TRACKING" }
-  | { type: "SEEK_ALL"; time: number }
+  | { type: "SEEK_ALL"; direction: string }
   | { type: "SET_GLOBAL_SPEED"; value: number };
 
 export interface Player {

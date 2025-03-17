@@ -7,7 +7,7 @@ const GlobalProgressIndicator = () => {
   return (
     <div className="flex items-center justify-center gap-2">
       <div
-        className="customProgressBar w-[900px]"
+        className="customProgressBar w-[200px] sm:w-[200px] md:w-[400px] lg:w-[800px]"
         id="outerDiv"
         ref={outProgressDiv}
         //   onClick={handleSeek}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DotLottieReact, DotLottie } from "@lottiefiles/dotlottie-react";
 import { MachineContext } from "../../context/MachineContext";
 import AnimationControls from "../AnimationControls";
-import { playerTypes } from "../../constants";
+import { playerStatus, playerTypes } from "../../constants";
 
 const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
   const file = MachineContext.useSelector((state) => state.context.file);
@@ -13,7 +13,7 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
   const playbackSpeed = MachineContext.useSelector(
     (state) => state.context.players[playerId]?.playbackSpeed,
   );
-  const playerStatus = MachineContext.useSelector(
+  const status = MachineContext.useSelector(
     (state) => state.context.players[playerId]?.status,
   );
   const { send } = MachineContext.useActorRef();
@@ -24,19 +24,19 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
       send({ type: "REGISTER_PLAYER", id: playerId, ref: dottie });
     }
     const handleLoad = () => {
-      if (playerStatus === "playing") {
+      if (status === playerStatus.playing) {
         dottie?.play();
-      } else if (playerStatus === "paused") {
+      } else if (status === playerStatus.paused) {
         dottie?.pause();
-      } else if (playerStatus === "ready") {
-        dottie?.setFrame(0);
+      } else if (status === playerStatus.stopped) {
+        dottie?.setFrame(1);
         dottie?.stop();
       }
     };
     if (dottie) {
       dottie?.addEventListener("load", handleLoad);
     }
-  }, [send, dottie, playerStatus, playbackSpeed, playerId]);
+  }, [send, dottie, status, playbackSpeed, playerId]);
   return (
     <section className="flex flex-col items-center justify-center">
       <h2 className="mb-1">DotLottie Player</h2>

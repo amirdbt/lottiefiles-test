@@ -6,7 +6,7 @@ import {
   type EventObject,
 } from "xstate";
 import { AnimationContext, AnimationEvent } from "./animationMachine.types";
-import { MAX_FILE_SIZE, playerStatus } from "../constants";
+import { MAX_FILE_SIZE, playerStatus, seekType } from "../constants";
 import { AnimationItem } from "lottie-web";
 
 const trackProgress = fromCallback<
@@ -157,6 +157,7 @@ const animationMachine = createMachine(
             actions: assign({
               players: ({ context, event }) => {
                 const player = context.players[event.id];
+
                 return {
                   ...context.players,
                   [event.id]: {
@@ -168,6 +169,7 @@ const animationMachine = createMachine(
               },
             }),
           },
+
           PLAY: {
             target: "playing",
             actions: assign({
@@ -249,21 +251,70 @@ const animationMachine = createMachine(
           //Global Controls
           PLAY_ALL: {
             target: "playing",
-            actions: assign({ isPlaying: true }),
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isPlaying: true,
+                      status: playerStatus.playing,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
-          PAUSE_ALL: {
-            target: "paused",
-            actions: assign({ isPlaying: false }),
+          SEEK_ALL: {
+            actions: assign({
+              players: ({ context, event }) => {
+                const { direction } = event;
+
+                return Object.entries(context.players).reduce(
+                  (acc, [id, player]) => {
+                    let newFrame = player.currentTime;
+
+                    if (direction === seekType.start) {
+                      newFrame = 0;
+                    } else if (direction === seekType.end) {
+                      //@ts-expect-error: it does exist
+                      newFrame = player.ref?.totalFrames;
+                    } else if (direction === seekType.forward) {
+                      newFrame = Math.min(
+                        player.currentTime + 1, //@ts-expect-error: it does exist
+                        player.ref?.totalFrames,
+                      );
+                    } else if (direction === seekType.backward) {
+                      newFrame = Math.max(player.currentTime - 1, 0);
+                    }
+                    //@ts-expect-error: it does exist
+                    acc[id] = {
+                      ...player,
+                      currentTime: newFrame,
+                    };
+
+                    return acc;
+                  },
+                  {},
+                );
+              },
+            }),
           },
-          STOP_ALL: {
-            target: "idle",
-            actions: assign({ isPlaying: false }),
-          },
-          // SEEK_ALL: {
-          //   actions: assign({ currentTime: ({ event }) => event.time }),
-          // },
           SET_GLOBAL_SPEED: {
-            actions: assign({ globalSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      playbackSpeed: event.value,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
         },
       },
@@ -292,6 +343,7 @@ const animationMachine = createMachine(
             }),
           },
           ANIMATION_ENDED: {
+            target: "stopped",
             actions: assign({
               players: ({ context, event }) => {
                 const player = context.players[event.id];
@@ -301,6 +353,7 @@ const animationMachine = createMachine(
                   [event.id]: {
                     ...player,
                     isPlaying: false,
+                    status: playerStatus.stopped,
                     // currentTime: 0,
                   },
                 };
@@ -391,17 +444,103 @@ const animationMachine = createMachine(
           //Global Controls
           PAUSE_ALL: {
             target: "paused",
-            actions: assign({ isPlaying: false }),
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isPlaying: false,
+                      status: playerStatus.paused,
+                    },
+                  }),
+                  {},
+                ),
+            }),
+          },
+          LOOP_ALL: {
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isLooping: !context.players[id]?.isLooping,
+                    },
+                  }),
+                  {},
+                ),
+              isLooping: ({ context }) => !context.isLooping,
+            }),
           },
           STOP_ALL: {
-            target: "idle",
-            actions: assign({ isPlaying: false }),
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isPlaying: false,
+                      currentTime: 0,
+                      status: playerStatus.ready,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
-          // SEEK_ALL: {
-          //   actions: assign({ currentTime: ({ event }) => event.time }),
-          // },
+          SEEK_ALL: {
+            actions: assign({
+              players: ({ context, event }) => {
+                const { direction } = event;
+
+                return Object.entries(context.players).reduce(
+                  (acc, [id, player]) => {
+                    let newFrame = player.currentTime;
+
+                    if (direction === seekType.start) {
+                      newFrame = 0;
+                    } else if (direction === seekType.end) {
+                      //@ts-expect-error: it does exist
+                      newFrame = player.ref?.totalFrames;
+                    } else if (direction === seekType.forward) {
+                      newFrame = Math.min(
+                        player.currentTime + 1, //@ts-expect-error: it does exist
+                        player.ref?.totalFrames,
+                      );
+                    } else if (direction === seekType.backward) {
+                      newFrame = Math.max(player.currentTime - 1, 0);
+                    }
+                    //@ts-expect-error: it does exist
+                    acc[id] = {
+                      ...player,
+                      currentTime: newFrame,
+                    };
+
+                    return acc;
+                  },
+                  {},
+                );
+              },
+            }),
+          },
           SET_GLOBAL_SPEED: {
-            actions: assign({ globalSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      playbackSpeed: event.value,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
         },
       },
@@ -491,17 +630,142 @@ const animationMachine = createMachine(
           //Global Controls
           PLAY_ALL: {
             target: "playing",
-            actions: assign({ isPlaying: true }),
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isPlaying: true,
+                      status: playerStatus.playing,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
           STOP_ALL: {
-            target: "idle",
-            actions: assign({ isPlaying: false }),
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isPlaying: false,
+                      currentTime: 0,
+                      status: playerStatus.ready,
+                    },
+                  }),
+                  {},
+                ),
+            }),
           },
-          // SEEK_ALL: {
-          //   actions: assign({ currentTime: ({ event }) => event.time }),
-          // },
+          LOOP_ALL: {
+            actions: assign({
+              players: ({ context }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      isLooping: !context.players[id]?.isLooping,
+                    },
+                  }),
+                  {},
+                ),
+              isLooping: ({ context }) => !context.isLooping,
+            }),
+          },
+          SEEK_ALL: {
+            actions: assign({
+              players: ({ context, event }) => {
+                const { direction } = event;
+
+                return Object.entries(context.players).reduce(
+                  (acc, [id, player]) => {
+                    let newFrame = player.currentTime;
+
+                    if (direction === seekType.start) {
+                      newFrame = 0;
+                    } else if (direction === seekType.end) {
+                      //@ts-expect-error: it does exist
+                      newFrame = player.ref?.totalFrames;
+                    } else if (direction === seekType.forward) {
+                      newFrame = Math.min(
+                        player.currentTime + 1, //@ts-expect-error: it does exist
+                        player.ref?.totalFrames,
+                      );
+                    } else if (direction === seekType.backward) {
+                      newFrame = Math.max(player.currentTime - 1, 0);
+                    }
+                    //@ts-expect-error: it does exist
+                    acc[id] = {
+                      ...player,
+                      currentTime: newFrame,
+                    };
+
+                    return acc;
+                  },
+                  {},
+                );
+              },
+            }),
+          },
           SET_GLOBAL_SPEED: {
-            actions: assign({ globalSpeed: ({ event }) => event.value }),
+            actions: assign({
+              players: ({ context, event }) =>
+                Object.keys(context.players).reduce(
+                  (acc, id) => ({
+                    ...acc,
+                    [id]: {
+                      ...context.players[id],
+                      playbackSpeed: event.value,
+                    },
+                  }),
+                  {},
+                ),
+            }),
+          },
+        },
+      },
+      stopped: {
+        on: {
+          PLAY: {
+            target: "playing",
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: true,
+                    status: playerStatus.playing,
+                  },
+                };
+              },
+            }),
+          },
+          STOP: {
+            target: "ready",
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+                // @ts-expect-error :fix this later
+                player?.ref?.stop();
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                    currentTime: 0,
+                    status: playerStatus.ready,
+                  },
+                };
+              },
+            }),
           },
         },
       },

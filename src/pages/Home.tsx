@@ -8,7 +8,7 @@ const Home = () => {
     <main>
       <ControlPanel />
 
-      <div className="grid min-h-[80vh] grid-cols-1 grid-rows-2 sm:grid-cols-1 md:grid-cols-2">
+      <div className="grid min-h-[84vh] grid-cols-1 grid-rows-2 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2">
         <div className="flex items-center justify-center border border-gray-600">
           <DotLottiePlayer playerId="player1" />
         </div>
