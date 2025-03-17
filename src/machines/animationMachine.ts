@@ -78,13 +78,13 @@ const animationMachine = createMachine(
               guard: "isFileMissing",
               actions: assign({ error: "No file selected." }),
             },
-            // {
-            //   target: "error",
-            //   guard: "isInvalidFileType",
-            //   actions: assign({
-            //     error: "Invalid file type. Please upload a .lottie file.",
-            //   }),
-            // },
+            {
+              target: "error",
+              guard: "isInvalidFileType",
+              actions: assign({
+                error: "Invalid file type. Please upload a .lottie file.",
+              }),
+            },
             {
               target: "error",
               guard: "isFileTooLarge",
@@ -521,7 +521,9 @@ const animationMachine = createMachine(
       },
       isInvalidFileType: ({ event }: { event: AnimationEvent }) => {
         return (
-          event?.type === "LOAD_FILE" && !event.file?.name.endsWith(".lottie")
+          event?.type === "LOAD_FILE" &&
+          !event.file?.name.endsWith(".lottie") &&
+          !event.file?.name.endsWith(".json")
         );
       },
       hasValidFile: ({ context }) => Boolean(context.file),

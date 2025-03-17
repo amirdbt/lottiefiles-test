@@ -47,7 +47,7 @@ const ProgressIndicator = ({ id, type }: { id: string; type: string }) => {
     });
   };
   return (
-    <>
+    <div className="flex items-center justify-center gap-2">
       <div
         className="customProgressBar"
         id="outerDiv"
@@ -66,7 +66,7 @@ const ProgressIndicator = ({ id, type }: { id: string; type: string }) => {
       <div className="w-11">
         <p className="text-white">{formatFrame(currentTime, totalFrames)}</p>
       </div>
-    </>
+    </div>
   );
 };
 

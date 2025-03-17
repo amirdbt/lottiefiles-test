@@ -1,6 +1,6 @@
 import { playerStatus } from "../constants";
 import { MachineContext } from "../context/MachineContext";
-import { PlayCircle, PauseCircle, StopCircle, Repeat } from "lucide-react";
+import { StopCircle, Repeat, Play, Pause } from "lucide-react";
 import Tooltip from "./Tooltip";
 import ProgressIndicator from "./ProgressIndicator";
 
@@ -25,7 +25,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
     const speed = parseFloat(e.target.value);
     send({ type: "SET_SPEED", id, value: speed });
   };
-  const Icon = status === playerStatus.playing ? PauseCircle : PlayCircle;
+  const Icon = status === playerStatus.playing ? Pause : Play;
   const actionType = status === playerStatus.playing ? "PAUSE" : "PLAY";
   const tootlTipText = status === playerStatus.playing ? "Pause" : "Play";
 
@@ -45,7 +45,9 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
             onClick={() => send({ type: "STOP", id, currentTime: { [id]: 0 } })}
           />
         </Tooltip>
-        <ProgressIndicator id={id} type={type} />
+        <Tooltip text="Click to seek">
+          <ProgressIndicator id={id} type={type} />
+        </Tooltip>
         <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
           <Repeat
             className={`bg-primary cursor-pointer ${isLooping ? "text-gray-600" : "text-white"} `}

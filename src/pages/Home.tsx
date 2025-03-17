@@ -1,12 +1,11 @@
-// import ControlPanel from "../components/ControlPanel";
-// import ControlPanel from "../components/ControlPanel";
+import ControlPanel from "../components/ControlPanel";
 import DotLottiePlayer from "../components/players/DotLottiePlayer";
 import LottieWebPlayer from "../components/players/LottieWebPlayer";
 
 const Home = () => {
   return (
     <main>
-      {/* <ControlPanel /> */}
+      <ControlPanel />
 
       {/* <GlobalControls /> */}
       <div className="grid min-h-screen grid-cols-2 grid-rows-2">
