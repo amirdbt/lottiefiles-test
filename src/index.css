@@ -114,7 +114,7 @@
 .customProgressBar {
   background: rgba(196, 196, 196, 0.3);
   backdrop-filter: blur(4.5px);
-  width: 200px;
+
   box-sizing: border-box;
   height: 12px;
   border-radius: 5px;

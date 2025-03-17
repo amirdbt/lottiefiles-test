@@ -1,78 +1,57 @@
-import { useState } from "react";
-import useAnimationMachine from "../context/useAnimationMachine";
+import { playerStatus } from "../constants";
+import { MachineContext } from "../context/MachineContext";
+import GlobalProgressIndicator from "./GlobalProgressIndicator";
+import Tooltip from "./Tooltip";
+import { StopCircle, Repeat, Play, Pause } from "lucide-react";
 
 const GlobalControls = () => {
-  const { send, state } = useAnimationMachine();
-  const [seekTime, setSeekTime] = useState(0);
-  const [speed, setSpeed] = useState(1);
-
-  const handlePlayAll = () => send({ type: "PLAY_ALL" });
-  const handlePauseAll = () => send({ type: "PAUSE_ALL" });
-  const handleStopAll = () => send({ type: "STOP_ALL" });
-
-  const handleSeek = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const time = Number(event.target.value);
-    setSeekTime(time);
-    send({ type: "SEEK", time });
-  };
-  const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const speed = Number(event.target.value);
-    setSpeed(speed);
-    send({ type: "SET_GLOBAL_SPEED", value: speed });
-  };
-  console.log({ state });
+  const status = MachineContext.useSelector((state) => state.status);
+  const isLooping = MachineContext.useSelector(
+    (state) => state.context.isLooping,
+  );
+  const Icon = status === playerStatus.playing ? Pause : Play;
+  // const actionType = status === playerStatus.playing ? "PAUSE" : "PLAY";
+  const tootlTipText = status === playerStatus.playing ? "Pause" : "Play";
   return (
     <>
-      <div className="rounded border p-4 shadow-md">
+      <div className="flex w-full flex-col items-center rounded border p-4 shadow-md">
         <h2 className="mb-2 text-lg font-bold text-white">Global Controls</h2>
 
-        <div className="mb-2 flex gap-2">
-          <button
-            onClick={handlePlayAll}
-            className="rounded bg-green-500 p-2 text-white"
-          >
-            Play All
-          </button>
-          <button
-            onClick={handlePauseAll}
-            className="rounded bg-yellow-500 p-2 text-white"
-          >
-            Pause All
-          </button>
-          <button
-            onClick={handleStopAll}
-            className="rounded bg-red-500 p-2 text-white"
-          >
-            Stop All
-          </button>
-        </div>
-
-        <div className="flex gap-2">
-          <label className="text-white">
-            Seek:
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={seekTime}
-              onChange={handleSeek}
-              className="w-full bg-white"
+        <div className="flex flex-row items-center justify-center gap-2">
+          <Tooltip text={tootlTipText}>
+            <Icon
+              size={"30"}
+              className="bg-primary cursor-pointer text-white"
             />
-          </label>
+          </Tooltip>
 
-          <label className="text-white">
-            Speed:
-            <input
-              type="number"
-              step="0.1"
-              min="0.1"
-              max="3"
-              value={speed}
-              onChange={handleSpeedChange}
-              className="rounded border bg-amber-50 p-2"
-              placeholder="Speed"
+          <Tooltip text="Stop">
+            <StopCircle
+              size={"30"}
+              className="bg-primary cursor-pointer text-white"
             />
-          </label>
+          </Tooltip>
+          <Tooltip text="Click to seek">
+            <GlobalProgressIndicator />
+          </Tooltip>
+          <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
+            <Repeat
+              size={"30"}
+              className={`bg-primary cursor-pointer ${isLooping ? "text-gray-600" : "text-white"} `}
+            />
+          </Tooltip>
+
+          <Tooltip text="Playback Speed">
+            <select
+              className="bg-primary cursor-pointer rounded-md border border-white p-1 text-sm text-white shadow-md transition-all duration-200 outline-none focus:ring-2 focus:ring-white"
+              value={1}
+            >
+              <option value="0.5">0.5x</option>
+              <option value="1">1x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+            </select>
+          </Tooltip>
         </div>
       </div>
     </>
