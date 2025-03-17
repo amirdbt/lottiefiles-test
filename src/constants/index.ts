@@ -10,4 +10,12 @@ export const playerStatus = {
   ready: "ready",
   playing: "playing",
   paused: "paused",
+  stopped: "stopped",
+};
+
+export const seekType = {
+  forward: "forward",
+  backward: "backward",
+  start: "start",
+  end: "end",
 };
