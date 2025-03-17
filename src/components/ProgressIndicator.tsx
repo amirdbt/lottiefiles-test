@@ -49,7 +49,7 @@ const ProgressIndicator = ({ id, type }: { id: string; type: string }) => {
   return (
     <div className="flex items-center justify-center gap-2">
       <div
-        className="customProgressBar"
+        className="customProgressBar w-[200px]"
         id="outerDiv"
         ref={outProgressDiv}
         onClick={handleSeek}
