@@ -65,8 +65,6 @@ const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
     }
   }, [lottiePlayer, send, status, playbackSpeed, playerId, isLooping]);
 
-  console.log({ error, status, genStatus });
-
   return (
     <section className="flex flex-col items-center justify-center">
       <h2 className="mb-1 text-lg">LottieWeb Player</h2>

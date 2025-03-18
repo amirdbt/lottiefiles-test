@@ -16,6 +16,7 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
   const status = MachineContext.useSelector(
     (state) => state.context.players[playerId]?.status,
   );
+
   const { send } = MachineContext.useActorRef();
   const [dottie, setDottie] = useState<DotLottie | null>(null);
 
@@ -37,6 +38,8 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
       dottie?.addEventListener("load", handleLoad);
     }
   }, [send, dottie, status, playbackSpeed, playerId]);
+  console.log({ status, playerId });
+
   return (
     <section className="flex flex-col items-center justify-center">
       <h2 className="mb-1 text-lg">DotLottie Player</h2>

@@ -24,19 +24,53 @@ import {
   handleLoopAll,
 } from "./playerActions";
 
+// const trackProgress = fromCallback<
+//   EventObject,
+//   { players: Record<string, { ref: AnimationItem | null }> }
+// >(({ sendBack, input }) => {
+//   const { players } = input;
+
+//   const intervals = Object.entries(players).map(([id, player]) => {
+//     const ref = player?.ref;
+//     if (!ref) return () => {}; // Early return if no valid ref
+//     const interval = setInterval(() => {
+//       const currentTime = ref.currentFrame;
+//       const totalFrames = ref.totalFrames;
+//       if (currentTime !== undefined) {
+//         sendBack({
+//           type: "UPDATE_PROGRESS",
+//           id,
+//           currentTime: { [id]: Math.round(currentTime) },
+//         });
+//       }
+//       console.log({ currentTime, totalFrames });
+//       if (currentTime >= totalFrames - 1) {
+//         clearInterval(interval);
+
+//         sendBack({ type: "ANIMATION_ENDED", id });
+//       }
+//     }, 100);
+
+//     return () => clearInterval(interval);
+//   });
+
+//   return () => intervals.forEach((cleanup) => cleanup());
+// });
 const trackProgress = fromCallback<
   EventObject,
-  { players: Record<string, { ref: AnimationItem | null }> }
+  { eventType: string; players: Record<string, { ref: AnimationItem | null }> }
 >(({ sendBack, input }) => {
-  const { players } = input;
+  const { players, eventType } = input;
+  const animationFrameIds: Record<string, number> = {};
 
-  const intervals = Object.entries(players).map(([id, player]) => {
+  Object.entries(players).forEach(([id, player]) => {
     const ref = player?.ref;
-    if (!ref) return () => {}; // Early return if no valid ref
+    if (!ref) return; // Skip if no valid ref
 
-    const interval = setInterval(() => {
+    const track = () => {
       const currentTime = ref.currentFrame;
       const totalFrames = ref.totalFrames;
+
       if (currentTime !== undefined) {
         sendBack({
           type: "UPDATE_PROGRESS",
@@ -45,23 +79,32 @@ const trackProgress = fromCallback<
         });
       }
 
-      if (currentTime >= totalFrames - 1) {
-        clearInterval(interval);
-
-        sendBack({ type: "ANIMATION_ENDED", id });
+      if (currentTime < totalFrames - 1) {
+        animationFrameIds[id] = requestAnimationFrame(track);
+      } else {
+        if (eventType === "PLAY") {
+          sendBack({ type: "ANIMATION_ENDED", id });
+        } else {
+          sendBack({ type: "ANIMATION_ALL_ENDED", id });
+        }
       }
-    }, 100);
+    };
 
-    return () => clearInterval(interval);
+    animationFrameIds[id] = requestAnimationFrame(track);
   });
 
-  return () => intervals.forEach((cleanup) => cleanup());
+  return () => {
+    Object.values(animationFrameIds).forEach((frameId) =>
+      cancelAnimationFrame(frameId),
+    );
+  };
 });
 
 const animationMachine = createMachine(
   {
     id: "animationControl",
     initial: "idle",
+
     types: {
       context: {} as AnimationContext,
       events: {} as AnimationEvent,
@@ -75,7 +118,6 @@ const animationMachine = createMachine(
       isLooping: false,
       playbackSpeed: 1,
       globalSpeed: 1,
-      isSeeking: false,
     } as AnimationContext,
     states: {
       idle: {
@@ -128,7 +170,6 @@ const animationMachine = createMachine(
                     isLooping: false,
                     isPlaying: false,
                     playbackSpeed: 1,
-                    isSeeking: false,
                     status: playerStatus.idle,
                     error: "",
                   },
@@ -241,9 +282,12 @@ const animationMachine = createMachine(
       playing: {
         invoke: {
           src: "trackProgress",
-          input: ({ context }) => ({
-            players: context.players,
-          }),
+          input: ({ context, event }) => {
+            return {
+              players: context.players,
+              eventType: event.type,
+            };
+          },
         },
         on: {
           UPDATE_PROGRESS: {
@@ -251,6 +295,23 @@ const animationMachine = createMachine(
           },
           ANIMATION_ENDED: {
             target: "stopped",
+            actions: assign({
+              players: ({ context, event }) => {
+                const player = context.players[event.id];
+
+                return {
+                  ...context.players,
+                  [event.id]: {
+                    ...player,
+                    isPlaying: false,
+                    status: playerStatus.stopped,
+                    // currentTime: 0,
+                  },
+                };
+              },
+            }),
+          },
+          ANIMATION_ALL_ENDED: {
             actions: assign({
               players: ({ context, event }) => {
                 const player = context.players[event.id];

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { playerStatus, seekType } from "../constants";
+import { controlSource, playerStatus, seekType } from "../constants";
 import { MachineContext } from "../context/MachineContext";
 import Tooltip from "./Tooltip";
 import {
@@ -16,6 +16,7 @@ import {
 const GlobalControls = () => {
   const [speed, setSpeed] = useState(1);
   const status = MachineContext.useSelector((state) => state.value);
+  const source = MachineContext.useSelector((state) => state.context.source);
   const isLooping = MachineContext.useSelector(
     (state) => state.context.isLooping,
   );
@@ -28,9 +29,18 @@ const GlobalControls = () => {
     send({ type: "SET_GLOBAL_SPEED", value: speed });
   };
 
-  const Icon = status === playerStatus.playing ? Pause : Play;
-  const actionType = status === playerStatus.playing ? "PAUSE_ALL" : "PLAY_ALL";
-  const tootlTipText = status === playerStatus.playing ? "Pause" : "Play";
+  const Icon =
+    status === playerStatus.playing && source === controlSource.global
+      ? Pause
+      : Play;
+  const actionType =
+    status === playerStatus.playing && source === controlSource.global
+      ? "PAUSE_ALL"
+      : "PLAY_ALL";
+  const tootlTipText =
+    status === playerStatus.playing && source === controlSource.global
+      ? "Pause"
+      : "Play";
 
   return (
     <>
@@ -106,7 +116,7 @@ const GlobalControls = () => {
 
           <Tooltip text="Playback Speed">
             <select
-              className="text-primary border-primary cursor-pointer rounded-md border p-1 text-sm shadow-md transition-all duration-200 ease-in-out outline-none hover:scale-110 focus:ring-2 focus:ring-white"
+              className="text-primary border-primary cursor-pointer rounded-md border-2 p-1 text-sm shadow-md transition-all duration-200 ease-in-out outline-none hover:scale-110 focus:ring-2 focus:ring-white"
               value={speed}
               onChange={handlePlaybackSpeedChange}
             >

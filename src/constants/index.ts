@@ -19,3 +19,8 @@ export const seekType = {
   start: "start",
   end: "end",
 };
+
+export const controlSource = {
+  global: "GLOBAL",
+  individual: "INDIVIDUAL",
+};
