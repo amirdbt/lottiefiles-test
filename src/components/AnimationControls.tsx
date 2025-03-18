@@ -34,6 +34,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
       <div className="flex flex-row items-center justify-center gap-2">
         <Tooltip text={tootlTipText}>
           <Icon
+            tabIndex={0}
             onClick={() => send({ type: actionType, id })}
             className="bg-primary cursor-pointer text-white"
           />
@@ -41,6 +42,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
 
         <Tooltip text="Stop">
           <StopCircle
+            tabIndex={0}
             className="bg-primary cursor-pointer text-white"
             onClick={() => send({ type: "STOP", id, currentTime: { [id]: 0 } })}
           />
@@ -50,6 +52,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
         </Tooltip>
         <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
           <Repeat
+            tabIndex={0}
             className={`bg-primary cursor-pointer ${isLooping ? "text-gray-600" : "text-white"} `}
             onClick={() =>
               send({

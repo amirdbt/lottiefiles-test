@@ -19,6 +19,10 @@ const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
   const status = MachineContext.useSelector(
     (state) => state.context.players[playerId]?.status,
   );
+  const genStatus = MachineContext.useSelector((state) => state.value);
+  const error = MachineContext.useSelector(
+    (state) => state.context.players[playerId]?.error,
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -28,11 +32,24 @@ const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
       autoplay: false,
       path: file ? URL.createObjectURL(file) : "",
     });
+
     setLottiePlayer(instance);
+
     return () => {
       instance.destroy(); // Clean up when component unmounts
     };
-  }, [file]);
+  }, [file, send, playerId]);
+
+  useEffect(() => {
+    if (file && file.name.endsWith(".lottie")) {
+      send({
+        type: "SET_PLAYER_ERROR",
+        id: playerId,
+        error: "Invalid file format for LottieWeb. Please upload a .json file.",
+      });
+    }
+  }, [file, send, playerId, genStatus]);
+
   useEffect(() => {
     if (lottiePlayer) {
       send({ type: "REGISTER_PLAYER", id: playerId, ref: lottiePlayer });
@@ -47,15 +64,21 @@ const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
       lottiePlayer?.setSpeed(playbackSpeed);
     }
   }, [lottiePlayer, send, status, playbackSpeed, playerId, isLooping]);
+
+  console.log({ error, status, genStatus });
+
   return (
     <section className="flex flex-col items-center justify-center">
-      <h2 className="mb-1">LottieWeb Player</h2>
+      <h2 className="mb-1 text-lg">LottieWeb Player</h2>
+      {error && <p className="text-sm text-red-500">{error}</p>}
       <div
         ref={containerRef}
         className="h-[220px] w-[440px] rounded-2xl border bg-white"
       />
 
-      <AnimationControls id={playerId} type={playerTypes.lottieWeb} />
+      {!error && (
+        <AnimationControls id={playerId} type={playerTypes.lottieWeb} />
+      )}
     </section>
   );
 };

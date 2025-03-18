@@ -39,7 +39,7 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
   }, [send, dottie, status, playbackSpeed, playerId]);
   return (
     <section className="flex flex-col items-center justify-center">
-      <h2 className="mb-1">DotLottie Player</h2>
+      <h2 className="mb-1 text-lg">DotLottie Player</h2>
       <DotLottieReact
         dotLottieRefCallback={(dotLottie) => {
           setDottie(dotLottie);

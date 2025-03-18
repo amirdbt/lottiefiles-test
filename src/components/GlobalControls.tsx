@@ -41,6 +41,7 @@ const GlobalControls = () => {
           <Tooltip text="Stop">
             <StopCircle
               size={"30"}
+              tabIndex={0}
               className="text-primary cursor-pointer transition-all duration-300 ease-in-out hover:scale-110"
               onClick={() => send({ type: "STOP_ALL" })}
             />
@@ -48,6 +49,7 @@ const GlobalControls = () => {
           <Tooltip text="Go to start">
             <SkipBack
               size={"30"}
+              tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.start })
               }
@@ -57,6 +59,7 @@ const GlobalControls = () => {
           <Tooltip text="Go back 1 frame">
             <ChevronLeft
               size={"30"}
+              tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.backward })
               }
@@ -66,6 +69,7 @@ const GlobalControls = () => {
           <Tooltip text={tootlTipText}>
             <Icon
               size={"30"}
+              tabIndex={0}
               className="text-primary cursor-pointer transition-all duration-300 ease-in-out hover:scale-110"
               onClick={() => send({ type: actionType })}
             />
@@ -74,6 +78,7 @@ const GlobalControls = () => {
           <Tooltip text="Go forward 1 frame">
             <ChevronRight
               size={"30"}
+              tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.forward })
               }
@@ -83,6 +88,7 @@ const GlobalControls = () => {
           <Tooltip text="Go to end">
             <SkipForward
               size={"30"}
+              tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.end })
               }
@@ -92,6 +98,7 @@ const GlobalControls = () => {
           <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
             <Repeat
               size={"30"}
+              tabIndex={0}
               className={`cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 ${isLooping ? "text-gray-600" : "text-whprimaryite"} `}
               onClick={() => send({ type: "LOOP_ALL" })}
             />
