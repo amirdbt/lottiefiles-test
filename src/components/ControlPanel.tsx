@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MachineContext } from "../context/MachineContext";
 import { UploadCloud, XCircle } from "lucide-react";
 import { useDropzone } from "react-dropzone";
@@ -9,26 +9,43 @@ const ControlPanel = () => {
   const file = MachineContext.useSelector((state) => state.context.file);
   const error = MachineContext.useSelector((state) => state.context.error);
   const { send } = MachineContext.useActorRef();
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Do something with the files
-    setSelectedFile(acceptedFiles[0]);
-  }, []);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      setSelectedFile(acceptedFiles[0]);
+      send({ type: "LOAD_FILE", file: acceptedFiles[0] });
+    },
+    [send],
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { lottie: [".lottie", ".json"] },
     maxFiles: 1,
   });
-  const handleModal = () => setOpenModal(!openModal);
+  const handleModal = () => {
+    if (!openModal) {
+      send({ type: "RETRY" });
+      setSelectedFile(null);
+    }
+    setOpenModal(!openModal);
+  };
 
-  const handleSetFile = () => {
-    if (selectedFile) {
-      send({ type: "LOAD_FILE", file: selectedFile });
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        send({ type: "RETRY" });
+      }, 1000);
+    }
+  }, [error, send]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
       handleModal();
     }
   };
+
   return (
     <>
-      <div className="absolute z-30 rounded border p-4 shadow-md">
+      <div className="rounded border p-4 shadow-md">
         <button
           onClick={handleModal}
           className={`text-primary ${file ? "" : "animate-bounceLoop"} flex cursor-pointer items-center justify-between gap-2 rounded-md border-none bg-white p-2 shadow-md transition-all duration-300 ease-in-out hover:scale-110`}
@@ -41,7 +58,12 @@ const ControlPanel = () => {
           <div className="animate-bounceIn z-50 w-[960px] max-w-full rounded-md bg-white p-8 duration-200">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-primary mb-3.5 text-xl">Upload a file 😊 </h2>
-              <XCircle className="cursor-pointer" onClick={handleModal} />
+              <XCircle
+                className="cursor-pointer"
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+                onClick={handleModal}
+              />
             </div>
             <div
               {...getRootProps()}
@@ -63,7 +85,7 @@ const ControlPanel = () => {
               </p>
             )}
             <button
-              onClick={handleSetFile}
+              onClick={handleModal}
               className={`bg-primary mt-2 flex cursor-pointer items-center justify-between gap-2 rounded-md border-none p-2 text-sm text-white shadow-md transition-all duration-300 ease-in-out hover:scale-110`}
             >
               Submit

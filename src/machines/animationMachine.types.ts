@@ -16,6 +16,7 @@ export interface AnimationContext {
       playbackSpeed: number;
       currentTime: number;
       status: string;
+      error?: string;
     };
   };
 }
@@ -33,6 +34,7 @@ export type AnimationEvent =
   | { type: "LOAD_FILE"; file: File | null }
   | { type: "LOAD_FILE_SUCCESS"; file: File | null }
   | { type: "LOAD_FILE_ERROR"; error: string }
+  | { type: "SET_PLAYER_ERROR"; id: string; error: string }
   | { type: "RETRY" }
   | { type: "PLAY_ALL" }
   | { type: "PAUSE_ALL" }
