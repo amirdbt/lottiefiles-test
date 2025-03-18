@@ -7,7 +7,7 @@ export interface AnimationContext {
   error: string | null;
   playbackSpeed: number;
   globalSpeed: number;
-  isSeeking?: boolean;
+  source?: string;
   players: {
     [playerId: string]: {
       ref: object; // The player instance
@@ -29,7 +29,16 @@ export type AnimationEvent =
   | { type: "SEEK"; id: string; currentTime: Record<string, number> }
   | { type: "TOGGLE_LOOP"; id: string; currentTime: Record<string, number> }
   | { type: "UPDATE_PROGRESS"; id: string; currentTime: Record<string, number> }
-  | { type: "ANIMATION_ENDED"; id: string; currentTime: Record<string, number> }
+  | {
+      type: "ANIMATION_ENDED";
+      id: string;
+      currentTime: Record<string, number>;
+    }
+  | {
+      type: "ANIMATION_ALL_ENDED";
+      id: string;
+      currentTime: Record<string, number>;
+    }
   | { type: "SET_SPEED"; value: number; id: string }
   | { type: "LOAD_FILE"; file: File | null }
   | { type: "LOAD_FILE_SUCCESS"; file: File | null }
@@ -43,12 +52,3 @@ export type AnimationEvent =
   | { type: "RESUME_TRACKING" }
   | { type: "SEEK_ALL"; direction: string }
   | { type: "SET_GLOBAL_SPEED"; value: number };
-
-export interface Player {
-  ref: object | null;
-  currentTime: number;
-  isLooping: boolean;
-  isPlaying: boolean;
-  playbackSpeed: number;
-  status: string; // Or an enum if you prefer
-}

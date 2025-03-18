@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { playerStatus, seekType } from "../constants";
+import { controlSource, playerStatus, seekType } from "../constants";
 import { AnimationContext } from "./animationMachine.types";
 export const handlePlay = ({
   context,
@@ -10,6 +10,7 @@ export const handlePlay = ({
 }) => {
   const player = context.players[event.id];
   return {
+    source: controlSource.individual,
     players: {
       ...context.players,
       [event.id]: {
@@ -30,6 +31,8 @@ export const handlePause = ({
   const player = context.players[event.id];
 
   return {
+    source: controlSource.individual,
+
     players: {
       ...context.players,
       [event.id]: {
@@ -138,6 +141,8 @@ export const handleRegisterPlayer = ({
 
 export const handlePlayAll = ({ context }: { context: AnimationContext }) => {
   return {
+    source: controlSource.global,
+
     players: Object.keys(context.players).reduce(
       (acc, id) => ({
         ...acc,
@@ -153,6 +158,8 @@ export const handlePlayAll = ({ context }: { context: AnimationContext }) => {
 };
 export const handlePauseAll = ({ context }: { context: AnimationContext }) => {
   return {
+    source: controlSource.global,
+
     players: Object.keys(context.players).reduce(
       (acc, id) => ({
         ...acc,
