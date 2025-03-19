@@ -11,6 +11,8 @@ export const playerStatus = {
   playing: "playing",
   paused: "paused",
   stopped: "stopped",
+  loading: "loading",
+  error: "error",
 };
 
 export const seekType = {

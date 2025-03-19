@@ -35,6 +35,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
         <Tooltip text={tootlTipText}>
           <Icon
             tabIndex={0}
+            data-testid="playPause"
             onClick={() => send({ type: actionType, id })}
             className="bg-primary cursor-pointer text-white"
           />
@@ -43,6 +44,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
         <Tooltip text="Stop">
           <StopCircle
             tabIndex={0}
+            data-testid="stop"
             className="bg-primary cursor-pointer text-white"
             onClick={() => send({ type: "STOP", id, currentTime: { [id]: 0 } })}
           />
@@ -53,6 +55,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
         <Tooltip text={isLooping ? "Off Loop" : "On Loop"}>
           <Repeat
             tabIndex={0}
+            data-testid="toggle_loop"
             className={`bg-primary cursor-pointer ${isLooping ? "text-gray-600" : "text-white"} `}
             onClick={() =>
               send({
@@ -69,6 +72,7 @@ const AnimationControls = ({ id, type }: { id: string; type: string }) => {
             className="bg-primary cursor-pointer rounded-md border border-white p-1 text-sm text-white shadow-md transition-all duration-200 outline-none focus:ring-2 focus:ring-white"
             value={playbackSpeed}
             onChange={handlePlaybackSpeedChange}
+            data-testid="selectPlayback"
           >
             <option value="0.5">0.5x</option>
             <option value="1">1x</option>

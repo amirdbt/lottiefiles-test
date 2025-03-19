@@ -1,11 +1,8 @@
 export interface AnimationContext {
-  // players: object | null;
-  isPlaying: boolean;
-  currentTime: Record<string, number>;
   isLooping: boolean;
   file: File | null;
   error: string | null;
-  playbackSpeed: number;
+
   globalSpeed: number;
   source?: string;
   players: {

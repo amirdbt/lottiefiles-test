@@ -38,7 +38,6 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
       dottie?.addEventListener("load", handleLoad);
     }
   }, [send, dottie, status, playbackSpeed, playerId]);
-  console.log({ status, playerId });
 
   return (
     <section className="flex flex-col items-center justify-center">
@@ -49,6 +48,7 @@ const DotLottiePlayer = ({ playerId }: { playerId: string }) => {
         }}
         src={file ? URL.createObjectURL(file) : ""}
         autoplay={false}
+        data-testid="dotlottie"
         loop={isLooping}
         speed={playbackSpeed}
         className="h-[220px] w-[440px] rounded-2xl border bg-white"

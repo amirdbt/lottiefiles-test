@@ -7,9 +7,10 @@ export const handlePlay = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
   return {
+    ...context,
     source: controlSource.individual,
     players: {
       ...context.players,
@@ -27,10 +28,11 @@ export const handlePause = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
 
   return {
+    ...context,
     source: controlSource.individual,
 
     players: {
@@ -49,10 +51,11 @@ export const handleToggleLoop = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
-  if (!player) return context.players;
+  if (!player) return context;
   return {
+    ...context,
     players: {
       ...context.players,
       [event.id]: {
@@ -68,9 +71,10 @@ export const handleStop = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
   return {
+    ...context,
     players: {
       ...context.players,
       [event.id]: {
@@ -88,15 +92,18 @@ export const updatePlayerProgress = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
-  if (!player) return context.players;
+  if (!player) return context;
+  const newTime = event?.currentTime?.[event.id] ?? 0;
+
   return {
+    ...context,
     players: {
       ...context.players,
       [event.id]: {
         ...player,
-        currentTime: event?.currentTime[event.id] ?? 0,
+        currentTime: newTime,
       },
     },
   };
@@ -107,9 +114,10 @@ export const handleSetSpeed = ({
 }: {
   context: AnimationContext;
   event: any;
-}) => {
+}): AnimationContext => {
   const player = context.players[event.id];
   return {
+    ...context,
     players: {
       ...context.players,
       [event.id]: {

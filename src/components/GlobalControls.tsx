@@ -51,6 +51,7 @@ const GlobalControls = () => {
           <Tooltip text="Stop">
             <StopCircle
               size={"30"}
+              data-testid="stop_all"
               tabIndex={0}
               className="text-primary cursor-pointer transition-all duration-300 ease-in-out hover:scale-110"
               onClick={() => send({ type: "STOP_ALL" })}
@@ -60,6 +61,7 @@ const GlobalControls = () => {
             <SkipBack
               size={"30"}
               tabIndex={0}
+              data-testid="seek_all_start"
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.start })
               }
@@ -69,6 +71,7 @@ const GlobalControls = () => {
           <Tooltip text="Go back 1 frame">
             <ChevronLeft
               size={"30"}
+              data-testid="seek_all_backward"
               tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.backward })
@@ -80,6 +83,7 @@ const GlobalControls = () => {
             <Icon
               size={"30"}
               tabIndex={0}
+              data-testid="playPause"
               className="text-primary cursor-pointer transition-all duration-300 ease-in-out hover:scale-110"
               onClick={() => send({ type: actionType })}
             />
@@ -88,6 +92,7 @@ const GlobalControls = () => {
           <Tooltip text="Go forward 1 frame">
             <ChevronRight
               size={"30"}
+              data-testid="seek_all_forward"
               tabIndex={0}
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.forward })
@@ -99,6 +104,7 @@ const GlobalControls = () => {
             <SkipForward
               size={"30"}
               tabIndex={0}
+              data-testid="seek_all_end"
               onClick={() =>
                 send({ type: "SEEK_ALL", direction: seekType.end })
               }
@@ -109,6 +115,7 @@ const GlobalControls = () => {
             <Repeat
               size={"30"}
               tabIndex={0}
+              data-testid="loop_all"
               className={`cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 ${isLooping ? "text-gray-600" : "text-whprimaryite"} `}
               onClick={() => send({ type: "LOOP_ALL" })}
             />
@@ -118,6 +125,7 @@ const GlobalControls = () => {
             <select
               className="text-primary border-primary cursor-pointer rounded-md border-2 p-1 text-sm shadow-md transition-all duration-200 ease-in-out outline-none hover:scale-110 focus:ring-2 focus:ring-white"
               value={speed}
+              data-testid="select_global_speed"
               onChange={handlePlaybackSpeedChange}
             >
               <option value="0.5">0.5x</option>
