@@ -15,7 +15,7 @@ vi.mock("../../context/MachineContext", () => ({
 
 describe("DotLottiePlayer", () => {
   beforeEach(() => {
-    global.URL.createObjectURL = vi.fn(() => "mocked-object-url");
+    globalThis.URL.createObjectURL = vi.fn(() => "mocked-object-url");
   });
 
   afterEach(() => {
