@@ -24,38 +24,6 @@ import {
   handleLoopAll,
 } from "./playerActions";
 
-// const trackProgress = fromCallback<
-//   EventObject,
-//   { players: Record<string, { ref: AnimationItem | null }> }
-// >(({ sendBack, input }) => {
-//   const { players } = input;
-
-//   const intervals = Object.entries(players).map(([id, player]) => {
-//     const ref = player?.ref;
-//     if (!ref) return () => {}; // Early return if no valid ref
-//     const interval = setInterval(() => {
-//       const currentTime = ref.currentFrame;
-//       const totalFrames = ref.totalFrames;
-//       if (currentTime !== undefined) {
-//         sendBack({
-//           type: "UPDATE_PROGRESS",
-//           id,
-//           currentTime: { [id]: Math.round(currentTime) },
-//         });
-//       }
-//       console.log({ currentTime, totalFrames });
-//       if (currentTime >= totalFrames - 1) {
-//         clearInterval(interval);
-
-//         sendBack({ type: "ANIMATION_ENDED", id });
-//       }
-//     }, 100);
-
-//     return () => clearInterval(interval);
-//   });
-
-//   return () => intervals.forEach((cleanup) => cleanup());
-// });
 const trackProgress = fromCallback<
   EventObject,
   { eventType: string; players: Record<string, { ref: AnimationItem | null }> }
@@ -113,10 +81,6 @@ const animationMachine = createMachine(
       players: {},
       error: null,
       file: null,
-      isPlaying: false,
-      currentTime: {},
-      isLooping: false,
-      playbackSpeed: 1,
       globalSpeed: 1,
     } as AnimationContext,
     states: {

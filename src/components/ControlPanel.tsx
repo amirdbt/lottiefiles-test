@@ -61,12 +61,14 @@ const ControlPanel = () => {
               <XCircle
                 className="cursor-pointer"
                 tabIndex={0}
+                data-testid="close"
                 onKeyDown={handleKeyDown}
                 onClick={handleModal}
               />
             </div>
             <div
               {...getRootProps()}
+              data-testid="upload-card"
               className="flex h-[200px] cursor-pointer items-center justify-center rounded-md border border-gray-200 bg-[#fafafa] p-4"
             >
               <input {...getInputProps()} />

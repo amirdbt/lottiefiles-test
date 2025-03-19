@@ -1,8 +1,18 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+/// <reference types="vitest/config" />
+/// <reference types="vite/client" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(),tailwindcss(),],
-})
+  plugins: [react(), tailwindcss()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "/src/test/setup.ts",
+    include: ["**/*.test.ts", "**/*.test.tsx"],
+    watch: true,
+    css: true,
+  },
+});

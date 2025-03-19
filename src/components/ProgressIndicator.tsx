@@ -51,11 +51,13 @@ const ProgressIndicator = ({ id, type }: { id: string; type: string }) => {
       <div
         className="customProgressBar w-[200px]"
         id="outerDiv"
+        data-testid="outerDiv"
         ref={outProgressDiv}
         onClick={handleSeek}
       >
         <div
           id="innerDiv"
+          data-testid="innerDiv"
           className={`h-3 rounded-[4px] bg-green-500`}
           style={{
             transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
