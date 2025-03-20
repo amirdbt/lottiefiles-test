@@ -6,7 +6,7 @@ import {
   type EventObject,
 } from "xstate";
 import { AnimationContext, AnimationEvent } from "./animationMachine.types";
-import { MAX_FILE_SIZE, playerStatus } from "../constants";
+import { playerStatus } from "../constants";
 import { AnimationItem } from "lottie-web";
 import {
   handlePause,
@@ -104,13 +104,6 @@ const animationMachine = createMachine(
               guard: "isInvalidFileType",
               actions: assign({
                 error: "Invalid file type. Please upload a .lottie file.",
-              }),
-            },
-            {
-              target: "error",
-              guard: "isFileTooLarge",
-              actions: assign({
-                error: "File size exceeds 5MB limit",
               }),
             },
 
@@ -395,13 +388,6 @@ const animationMachine = createMachine(
   },
   {
     guards: {
-      isFileTooLarge: ({ event }: { event: AnimationEvent }) => {
-        return (
-          event?.type === "LOAD_FILE" &&
-          event?.file?.size !== undefined &&
-          event?.file?.size > MAX_FILE_SIZE
-        );
-      },
       isFileMissing: ({ event }: { event: AnimationEvent }) => {
         return event?.type === "LOAD_FILE" && !event.file;
       },
