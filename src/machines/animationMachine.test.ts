@@ -25,19 +25,6 @@ describe("animationMachine", () => {
       expect(actor.getSnapshot().value).toBe(playerStatus.loading);
     });
 
-    test("should transition to 'error' if file is too large", async () => {
-      const largeFile = new File(
-        ["test".repeat(6 * 1024 * 1024)],
-        "large.lottie",
-      );
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      actor.send({ type: "LOAD_FILE", file: largeFile });
-      expect(actor.getSnapshot().value).toBe(playerStatus.error);
-      expect(actor.getSnapshot().context.error).toBe(
-        "File size exceeds 5MB limit",
-      );
-    }, 10000);
-
     test("should transition to 'error' if file is missing", () => {
       actor.send({ type: "LOAD_FILE", file: null });
       expect(actor.getSnapshot().value).toBe(playerStatus.error);

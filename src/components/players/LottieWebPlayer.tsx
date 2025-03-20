@@ -28,8 +28,11 @@ const LottieWebPlayer = ({ playerId }: { playerId: string }) => {
     if (!containerRef.current) return;
     const instance = lottie.loadAnimation({
       container: containerRef.current,
-      renderer: "svg",
+      renderer: "canvas",
       autoplay: false,
+      rendererSettings: {
+        progressiveLoad: true,
+      },
       path: file ? URL.createObjectURL(file) : "",
     });
 
